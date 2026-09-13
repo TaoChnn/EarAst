@@ -28,7 +28,7 @@
     ></image>
     <view class="post-body">
       <view class="post-tag">{{item.tagLabel}}</view>
-      <view class="post-title">{{item.title}}</view>
+      <view class="post-title" wx:if="{{item.title}}">{{item.title}}</view>
       <view class="post-summary" wx:if="{{item.summary}}">{{item.summary}}</view>
       <view class="post-meta">
         <text>{{item.createTime}}</text>
