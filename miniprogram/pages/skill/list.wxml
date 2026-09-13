@@ -14,7 +14,27 @@
 
   <!-- ============ 官方指南 ============ -->
   <block wx:if="{{activeSource === 'developer'}}">
+    <!-- 官方内容主视觉：图片与文案组成一张完整的 Apple 式内容卡 -->
+    <view class="guide-hero">
+      <image
+        class="guide-hero__art"
+        src="/images/skill/hearing-guide-hero.svg"
+        mode="aspectFill"
+        aria-label="耳朵与声波组成的护耳主题插画"
+      ></image>
+      <view class="guide-hero__content">
+        <view class="guide-hero__eyebrow">听力健康指南</view>
+        <view class="guide-hero__title">好好听，也好好保护。</view>
+        <view class="guide-hero__desc">从音量、时长到日常习惯，用简单的方法守住每一次聆听。</view>
+        <view class="guide-hero__meta">{{developerTotal}} 篇专业指南</view>
+      </view>
+    </view>
+
     <!-- 分类筛选 -->
+    <view class="section-heading">
+      <view class="section-title">探索指南</view>
+      <view class="section-count">{{developerSkills.length}} 篇</view>
+    </view>
     <scroll-view class="chip-scroll" scroll-x="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
       <view class="chip-list">
         <view
@@ -27,22 +47,23 @@
       </view>
     </scroll-view>
 
-    <!-- 技能列表（iOS 内嵌分组列表） -->
-    <view class="group-list" wx:if="{{developerSkills.length}}">
+    <!-- 技能列表 -->
+    <view class="guide-list" wx:if="{{developerSkills.length}}">
       <view
-        class="group-row"
+        class="guide-row"
         wx:for="{{developerSkills}}"
         wx:key="id"
         data-id="{{item.id}}"
         bindtap="onTapSkill"
-        hover-class="group-row--hover"
+        hover-class="guide-row--hover"
       >
-        <view class="row-main">
-          <view class="row-title">{{item.title}}</view>
-          <view class="row-summary">{{item.summary}}</view>
-          <view class="row-meta">{{item.category}} · {{item.readMinutes}} 分钟阅读</view>
+        <view class="guide-row__main">
+          <view class="guide-row__category">{{item.category}}</view>
+          <view class="guide-row__title">{{item.title}}</view>
+          <view class="guide-row__summary">{{item.summary}}</view>
+          <view class="guide-row__meta">{{item.readMinutes}} 分钟阅读</view>
         </view>
-        <view class="row-chevron">›</view>
+        <view class="guide-row__arrow">›</view>
       </view>
     </view>
 

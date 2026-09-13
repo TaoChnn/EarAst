@@ -1,49 +1,159 @@
-/* 健康档案主页 —— 简约列表风格：常规字重、灰值右对齐、少颜色少解释 */
 .archive-page {
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: 0 0 calc(80rpx + env(safe-area-inset-bottom));
-  background: var(--color-canvas-parchment);
+  padding: 24rpx 24rpx calc(64rpx + env(safe-area-inset-bottom));
+  background: #f5f5f7;
 }
 
-.archive-loading {
-  padding: var(--spacing-xl) 0;
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
+.archive-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1rpx solid rgba(108, 132, 169, 0.1);
+  border-radius: 32rpx;
+  background: linear-gradient(125deg, #eaf2fb 0%, #f0f2fb 54%, #eeeafa 100%);
+  box-shadow: 0 12rpx 34rpx rgba(84, 104, 140, 0.12);
+}
+
+.hero-shape {
+  position: absolute;
+  pointer-events: none;
+}
+
+.hero-shape--ring {
+  top: -142rpx;
+  right: -80rpx;
+  width: 310rpx;
+  height: 310rpx;
+  border: 42rpx solid rgba(255, 255, 255, 0.38);
+  border-radius: 9999rpx;
+}
+
+.hero-shape--block {
+  bottom: -126rpx;
+  left: 226rpx;
+  width: 226rpx;
+  height: 226rpx;
+  border-radius: 64rpx;
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(28deg);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 36rpx 36rpx 0;
+}
+
+.hero-kicker {
+  color: #687b9b;
+  font-size: 19rpx;
+  font-weight: 650;
+  letter-spacing: 3rpx;
+  line-height: 1;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-top: 13rpx;
+}
+
+.hero-title {
+  color: #1d2b43;
+  font-size: 48rpx;
+  font-weight: 700;
+  letter-spacing: -1.5rpx;
+  line-height: 1.15;
+}
+
+.hero-subtitle {
+  margin-top: 8rpx;
+  color: #6f7b8e;
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.hero-percent {
+  flex-shrink: 0;
+  color: #506d9c;
+  font-size: 58rpx;
+  font-weight: 700;
+  letter-spacing: -2rpx;
+  line-height: 1;
+}
+
+.hero-percent text {
+  margin-left: 3rpx;
+  font-size: 25rpx;
+  font-weight: 600;
+}
+
+.progress-track {
+  overflow: hidden;
+  height: 12rpx;
+  margin-top: 30rpx;
+  border-radius: 9999rpx;
+  background: rgba(85, 108, 148, 0.13);
+}
+
+.progress-value {
+  height: 100%;
+  border-radius: 9999rpx;
+  background: linear-gradient(90deg, #739bc4 0%, #938fc2 100%);
+  transition: width 0.35s ease;
+}
+
+.progress-caption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12rpx;
+  color: #788599;
+  font-size: 20rpx;
+}
+
+.hero-stats {
+  display: flex;
+  align-items: center;
+  margin: 30rpx -36rpx 0;
+  padding: 24rpx 18rpx 26rpx;
+  border-top: 1rpx solid rgba(91, 111, 145, 0.1);
+  background: rgba(255, 255, 255, 0.27);
+}
+
+.hero-stat {
+  flex: 1;
   text-align: center;
 }
 
-.page-header {
-  padding: var(--spacing-lg) var(--spacing-md) var(--spacing-sm);
-}
-
-.page-title {
-  color: var(--color-ink);
-  font-size: var(--text-lead);
+.hero-stat-value {
+  color: #263751;
+  font-size: 32rpx;
   font-weight: 700;
-  line-height: var(--leading-display);
+  line-height: 1.15;
 }
 
-/* 待补充提示：一行淡灰小字，代替原完整度卡片 */
-.archive-missing {
-  margin-top: var(--spacing-xxs);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+.hero-stat-label {
+  margin-top: 6rpx;
+  color: #7d8796;
+  font-size: 20rpx;
 }
 
-/* 游客提示条 */
+.hero-stat-divider {
+  width: 1rpx;
+  height: 48rpx;
+  background: rgba(88, 106, 139, 0.14);
+}
+
 .guest-banner {
   display: flex;
   align-items: center;
-  box-sizing: border-box;
-  width: calc(100% - var(--spacing-md) * 2);
-  margin: 0 var(--spacing-md) var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border: 2rpx solid var(--color-divider-soft);
-  border-radius: var(--radius-lg);
-  background: var(--color-canvas);
+  margin-top: 20rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 22rpx;
+  background: #ffffff;
+  box-shadow: 0 5rpx 18rpx rgba(0, 0, 0, 0.045);
 }
 
 .guest-copy {
@@ -52,211 +162,540 @@
 }
 
 .guest-title {
-  color: var(--color-ink);
-  font-size: var(--text-caption);
+  color: #1d1d1f;
+  font-size: 27rpx;
   font-weight: 600;
 }
 
 .guest-desc {
-  margin-top: var(--spacing-xxs);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  margin-top: 5rpx;
+  color: #86868b;
+  font-size: 21rpx;
 }
 
 .guest-login {
   flex-shrink: 0;
-  margin-left: var(--spacing-sm);
-  padding: 12rpx 28rpx;
-  color: var(--color-on-primary);
-  background: var(--color-primary);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-caption);
+  margin-left: 18rpx;
+  padding: 12rpx 26rpx;
+  border-radius: 9999rpx;
+  color: #ffffff;
+  background: #6f8fb7;
+  font-size: 24rpx;
+  font-weight: 600;
 }
 
 .guest-login--pressed {
-  background: var(--color-primary-focus);
+  opacity: 0.76;
 }
 
-/* 分组标题：常规字重，只做轻分隔 */
-.section-title-row {
+.archive-loading {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
-  font-weight: 400;
-}
-
-.section-more {
-  color: var(--color-primary);
-  font-size: var(--text-caption);
-}
-
-/* 分组列表 */
-.group-list {
-  margin: 0 var(--spacing-md);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--color-canvas);
-}
-
-.group-row {
-  display: flex;
+  min-height: 380rpx;
+  flex-direction: column;
   align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 2rpx solid var(--color-divider-soft);
+  justify-content: center;
+  color: #86868b;
+  font-size: 24rpx;
 }
 
-.group-row:last-child {
-  border-bottom: none;
+.loading-dot {
+  width: 18rpx;
+  height: 18rpx;
+  margin-bottom: 18rpx;
+  border-radius: 9999rpx;
+  background: #8199b8;
+  box-shadow: 28rpx 0 0 rgba(129, 153, 184, 0.55), -28rpx 0 0 rgba(129, 153, 184, 0.28);
 }
 
-.group-row--hover {
-  background: var(--color-surface-pearl);
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 40rpx 6rpx 16rpx;
 }
 
-.row-main {
+.section-title {
+  color: #1d1d1f;
+  font-size: 32rpx;
+  font-weight: 650;
+  letter-spacing: -0.5rpx;
+  line-height: 1.2;
+}
+
+.section-caption {
+  color: #929297;
+  font-size: 21rpx;
+}
+
+.section-action {
+  color: #607fa8;
+  font-size: 23rpx;
+  font-weight: 550;
+}
+
+.section-action text {
+  margin-left: 4rpx;
+  font-size: 28rpx;
+  font-weight: 300;
+}
+
+.info-card,
+.record-card,
+.note-composer,
+.usage-card,
+.empty-card,
+.danger-card {
+  overflow: hidden;
+  border: 1rpx solid rgba(0, 0, 0, 0.035);
+  border-radius: 26rpx;
+  background: #ffffff;
+  box-shadow: 0 6rpx 22rpx rgba(0, 0, 0, 0.045);
+}
+
+.info-row {
+  position: relative;
+  display: flex;
+  min-height: 112rpx;
+  align-items: center;
+  padding: 0 26rpx;
+}
+
+.info-row::after {
+  position: absolute;
+  right: 26rpx;
+  bottom: 0;
+  left: 26rpx;
+  height: 1rpx;
+  background: #ededf0;
+  content: '';
+}
+
+.info-row:last-child::after {
+  display: none;
+}
+
+.info-row--pressed {
+  background: #fafafc;
+}
+
+.row-copy {
+  display: flex;
   flex: 1;
   min-width: 0;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* 行标题常规字重，靠分组和留白建立层级 */
-.row-title {
-  color: var(--color-ink);
-  font-size: var(--text-body-strong);
-  font-weight: 400;
-  line-height: 1.4;
+.row-label {
+  color: #1d1d1f;
+  font-size: 27rpx;
+  font-weight: 550;
 }
 
 .row-value {
-  flex-shrink: 0;
-  margin-left: var(--spacing-sm);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-body-strong);
-  text-align: right;
-}
-
-/* 摘要允许最多 2 行，避免信息被截断得看不懂 */
-.row-summary {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
-  margin-top: var(--spacing-xxs);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-  word-break: break-word;
+  max-width: 56%;
+  margin-left: 18rpx;
+  color: #747478;
+  font-size: 26rpx;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 日志与记忆正文可能较长，最多 3 行后再截断 */
-.note-content {
-  -webkit-line-clamp: 3;
+.row-value--empty {
+  color: #aaaab0;
 }
 
-.row-meta {
-  margin-top: var(--spacing-xxs);
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-micro-legal);
+.row-chevron {
+  margin-left: 4rpx;
+  color: #b0b0b5;
+  font-size: 31rpx;
+  font-weight: 300;
 }
 
-/* 删除：纯文字，不再用药丸底色 */
-.row-delete {
+.usage-primary {
+  padding: 28rpx 30rpx 26rpx;
+  background: linear-gradient(120deg, #edf5fb 0%, #f4f6fb 100%);
+}
+
+.usage-primary--warning {
+  background: linear-gradient(120deg, #fbf5e8 0%, #faf8f2 100%);
+}
+
+.usage-primary--danger {
+  background: linear-gradient(120deg, #fbedeb 0%, #faf4f3 100%);
+}
+
+.usage-primary-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.usage-primary-label,
+.usage-metric-label {
+  color: #747b85;
+  font-size: 23rpx;
+}
+
+.usage-status {
+  padding: 8rpx 15rpx;
+  border-radius: 9999rpx;
+  color: #607e9d;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.usage-primary-value {
+  margin-top: 7rpx;
+  color: #26384f;
+  font-size: 52rpx;
+  font-weight: 700;
+  letter-spacing: -1.5rpx;
+  line-height: 1.2;
+}
+
+.usage-primary-value text {
+  margin-left: 7rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.usage-secondary {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 16rpx;
+}
+
+.usage-metric {
+  flex: 1;
+  text-align: center;
+}
+
+.usage-metric-value {
+  margin-top: 7rpx;
+  color: #303035;
+  font-size: 29rpx;
+  font-weight: 650;
+}
+
+.usage-metric-value text {
+  font-size: 20rpx;
+  font-weight: 450;
+}
+
+.usage-divider {
+  width: 1rpx;
+  height: 54rpx;
+  background: #ededf0;
+}
+
+.test-row,
+.note-row,
+.memory-row {
+  position: relative;
+  padding: 24rpx 26rpx;
+}
+
+.test-row::after,
+.note-row::after,
+.memory-row::after {
+  position: absolute;
+  right: 26rpx;
+  bottom: 0;
+  left: 26rpx;
+  height: 1rpx;
+  background: #ededf0;
+  content: '';
+}
+
+.test-row:last-child::after,
+.note-row:last-child::after,
+.memory-row:last-child::after {
+  display: none;
+}
+
+.test-date {
+  color: #303035;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.test-result {
+  display: flex;
+  margin-top: 16rpx;
+}
+
+.ear-result {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+}
+
+.ear-result + .ear-result {
+  margin-left: 16rpx;
+}
+
+.ear-label {
+  display: flex;
+  width: 40rpx;
+  height: 40rpx;
   flex-shrink: 0;
-  margin-left: var(--spacing-sm);
-  padding: var(--spacing-xxs) 0 var(--spacing-xxs) var(--spacing-sm);
-  color: var(--color-danger);
-  font-size: var(--text-caption);
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  color: #607fa8;
+  background: #edf4fb;
+  font-size: 20rpx;
+  font-weight: 700;
 }
 
-.group-row--danger .row-title--danger {
-  color: var(--color-danger);
+.ear-label--right {
+  color: #8175a4;
+  background: #f1eef8;
 }
 
-.empty-row {
-  display: block;
-  color: var(--color-ink-muted-48);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+.ear-value {
+  overflow: hidden;
+  margin-left: 10rpx;
+  color: #818187;
+  font-size: 20rpx;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 日志录入：标签直接铺开点选，输入，右下保存 */
 .note-composer {
-  box-sizing: border-box;
-  margin: 0 var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-canvas);
-  border-radius: var(--radius-lg);
+  padding: 24rpx 26rpx 22rpx;
+}
+
+.note-type-scroll {
+  margin: 0 -26rpx;
+  white-space: nowrap;
 }
 
 .note-types {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
+  padding: 0 26rpx;
 }
 
 .note-type-chip {
-  margin: 0 var(--spacing-xs) var(--spacing-xxs) 0;
-  padding: 10rpx 26rpx;
-  color: var(--color-ink-muted-48);
-  background: var(--color-canvas-parchment);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-caption);
-  line-height: 1.4;
+  margin-right: 12rpx;
+  padding: 12rpx 24rpx;
+  border: 1rpx solid #e8e8eb;
+  border-radius: 9999rpx;
+  color: #7d7d82;
+  background: #f8f8fa;
+  font-size: 23rpx;
+  line-height: 1;
 }
 
 .note-type-chip--active {
-  color: var(--color-on-primary);
-  background: var(--color-primary);
+  border-color: #6d88ac;
+  color: #ffffff;
+  background: #6d88ac;
+  font-weight: 600;
 }
 
 .note-input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 96rpx;
+  min-height: 116rpx;
   max-height: 240rpx;
-  margin-top: var(--spacing-xxs);
+  margin-top: 22rpx;
   padding: 0;
-  color: var(--color-ink);
-  font-size: var(--text-body);
-  line-height: 1.5;
+  color: #1d1d1f;
+  font-size: 27rpx;
+  line-height: 1.55;
 }
 
 .note-placeholder {
-  color: #a1a1a6;
-  font-size: var(--text-body);
+  color: #aaaab0;
+  font-size: 27rpx;
 }
 
-.note-actions {
+.note-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #f0f0f2;
+}
+
+.note-count {
+  color: #aaaab0;
+  font-size: 20rpx;
 }
 
 .note-save {
-  padding: var(--spacing-xxs) 0;
-  color: var(--color-primary);
-  font-size: var(--text-caption);
-  font-weight: 500;
-  line-height: var(--leading-caption);
+  padding: 12rpx 24rpx;
+  border-radius: 9999rpx;
+  color: #ffffff;
+  background: #6d88ac;
+  font-size: 23rpx;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .note-save--disabled {
-  color: #b0b0b5;
+  color: #aaaab0;
+  background: #ededf0;
 }
 
-.note-input {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 96rpx;
-  max-height: 240rpx;
-  padding: 0;
-  color: var(--color-ink);
-  font-size: var(--text-body);
+.note-list {
+  margin-top: 16rpx;
+}
+
+.note-row,
+.memory-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.note-indicator {
+  width: 8rpx;
+  height: 54rpx;
+  flex-shrink: 0;
+  margin-top: 3rpx;
+  border-radius: 9999rpx;
+  background: #829bb9;
+}
+
+.note-indicator--medication { background: #9a8db6; }
+.note-indicator--visit { background: #c58c86; }
+.note-indicator--habit { background: #79a192; }
+.note-indicator--note { background: #9b9ba0; }
+
+.note-row-main,
+.memory-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 18rpx;
+}
+
+.note-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.note-row-title,
+.memory-kind {
+  color: #303035;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.note-date,
+.memory-time {
+  color: #9a9a9f;
+  font-size: 20rpx;
+}
+
+.note-content,
+.memory-content {
+  margin-top: 9rpx;
+  color: #66666b;
+  font-size: 25rpx;
   line-height: 1.5;
+  word-break: break-word;
 }
 
-.note-placeholder {
+.note-source,
+.memory-time {
+  margin-top: 8rpx;
   color: #a1a1a6;
-  font-size: var(--text-body);
+  font-size: 19rpx;
+}
+
+.row-delete {
+  flex-shrink: 0;
+  margin-left: 18rpx;
+  padding: 4rpx 0 10rpx 12rpx;
+  color: #c37670;
+  font-size: 21rpx;
+}
+
+.memory-mark {
+  display: flex;
+  width: 56rpx;
+  height: 56rpx;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17rpx;
+  color: #746a9a;
+  background: linear-gradient(135deg, #eeeaf8 0%, #e9eff8 100%);
+  font-size: 19rpx;
+  font-weight: 700;
+}
+
+.empty-card {
+  display: flex;
+  min-height: 190rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-card--compact {
+  min-height: 112rpx;
+}
+
+.empty-symbol {
+  color: #a1a1a6;
+  font-size: 44rpx;
+  line-height: 1;
+}
+
+.empty-text {
+  margin-top: 12rpx;
+  color: #929297;
+  font-size: 24rpx;
+}
+
+.empty-card--compact .empty-text {
+  margin-top: 0;
+}
+
+.empty-action {
+  margin-top: 18rpx;
+  padding: 11rpx 24rpx;
+  border-radius: 9999rpx;
+  color: #607fa8;
+  background: #edf4fb;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.danger-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 25rpx 28rpx;
+}
+
+.danger-card--pressed {
+  background: #fffafa;
+}
+
+.danger-title {
+  color: #c3635d;
+  font-size: 26rpx;
+  font-weight: 550;
+}
+
+.danger-caption {
+  margin-top: 6rpx;
+  color: #a1a1a6;
+  font-size: 20rpx;
+}
+
+.danger-arrow {
+  color: #c8c8cd;
+  font-size: 34rpx;
+  font-weight: 300;
 }

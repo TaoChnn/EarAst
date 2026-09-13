@@ -1,0 +1,11 @@
+{
+  "name": "minicode-tools",
+  "private": true,
+  "description": "项目维护脚本：社区种子用户头像的归一化、云存储上传与建档代码生成",
+  "scripts": {
+    "avatars": "node seed-avatars.js"
+  },
+  "dependencies": {
+    "miniprogram-automator": "^0.12.1"
+  }
+}

@@ -1,124 +1,210 @@
 <view class="archive-page">
-  <view class="page-header">
-    <view class="page-title">健康档案</view>
-    <view class="archive-missing" wx:if="{{completeness.missingText}}">待补充：{{completeness.missingText}}</view>
+  <view class="archive-hero">
+    <view class="hero-shape hero-shape--ring"></view>
+    <view class="hero-shape hero-shape--block"></view>
+    <view class="hero-content">
+      <view class="hero-kicker">PERSONAL HEALTH</view>
+      <view class="hero-title-row">
+        <view>
+          <view class="hero-title">健康档案</view>
+          <view class="hero-subtitle">{{completeness.statusText}}</view>
+        </view>
+        <view class="hero-percent">{{completeness.percent}}<text>%</text></view>
+      </view>
+      <view class="progress-track">
+        <view class="progress-value" style="width: {{completeness.percent}}%;"></view>
+      </view>
+      <view class="progress-caption">
+        <text>已完善 {{completeness.doneCount}} / {{completeness.totalCount}} 项</text>
+        <text wx:if="{{completeness.missingText}}">待补充 {{completeness.nextMissing}}</text>
+        <text wx:else>档案信息完整</text>
+      </view>
+      <view class="hero-stats">
+        <view class="hero-stat">
+          <view class="hero-stat-value">{{profile.testCount}}</view>
+          <view class="hero-stat-label">听力测试</view>
+        </view>
+        <view class="hero-stat-divider"></view>
+        <view class="hero-stat">
+          <view class="hero-stat-value">{{usage.weekly ? usage.weekly.avgHours : '—'}}</view>
+          <view class="hero-stat-label">近 7 天日均</view>
+        </view>
+        <view class="hero-stat-divider"></view>
+        <view class="hero-stat">
+          <view class="hero-stat-value">{{notes.length}}</view>
+          <view class="hero-stat-label">健康日志</view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <view class="guest-banner" wx:if="{{!loggedIn}}">
     <view class="guest-copy">
       <view class="guest-title">当前为游客模式</view>
-      <view class="guest-desc">登录后健康日志与 AI 记忆会保存到云端。</view>
+      <view class="guest-desc">登录后健康日志与 AI 记忆会保存到云端</view>
     </view>
     <view class="guest-login" bindtap="onLoginTap" hover-class="guest-login--pressed">登录</view>
   </view>
 
-  <view class="archive-loading" wx:if="{{loading}}">正在加载…</view>
+  <view class="archive-loading" wx:if="{{loading}}">
+    <view class="loading-dot"></view>
+    <text>正在整理健康档案</text>
+  </view>
 
   <block wx:else>
-    <view class="section-title-row">基本情况</view>
-    <view class="group-list">
-      <view class="group-row">
-        <text class="row-title">常用耳机</text>
-        <text class="row-value">{{profile.deviceModel || '未填写'}}</text>
-      </view>
-      <view class="group-row">
-        <text class="row-title">累计听力测试</text>
-        <text class="row-value">{{profile.testCount}} 次</text>
-      </view>
-      <view class="group-row" bindtap="goSettings" hover-class="group-row--hover" hover-stay-time="80">
-        <text class="row-title">每日用耳提醒阈值</text>
-        <text class="row-value">{{profile.reminderThreshold}} 小时 ›</text>
-      </view>
+    <view class="section-heading">
+      <view class="section-title">基本情况</view>
     </view>
-
-    <view class="section-title-row">用耳行为</view>
-    <view class="group-list">
-      <view class="group-row" wx:if="{{usage.weekly}}">
-        <text class="row-title">近 7 天日均</text>
-        <text class="row-value">{{usage.weekly.avgHours}} 小时 · {{usage.weekly.statusText}}</text>
-      </view>
-      <view class="group-row" wx:if="{{usage.monthly}}">
-        <text class="row-title">近 30 天日均</text>
-        <text class="row-value">{{usage.monthly.avgHours}} 小时</text>
-      </view>
-      <view class="group-row" wx:if="{{usage.weekly && usage.weekly.avgVolume}}">
-        <text class="row-title">耳机平均音量</text>
-        <text class="row-value">约 {{usage.weekly.avgVolume}} 分贝</text>
-      </view>
-      <view class="group-row empty-row" wx:if="{{!usage.weekly}}">暂无用耳记录</view>
-    </view>
-
-    <view class="section-title-row">
-      <text>听力测试记录</text>
-      <text class="section-more" bindtap="goTestHistory">全部 ›</text>
-    </view>
-    <view class="group-list">
-      <view class="group-row" wx:for="{{tests}}" wx:key="id">
-        <view class="row-main">
-          <text class="row-title">{{item.occurredAtText}}</text>
-          <view class="row-summary">左耳 {{item.leftText}}，右耳 {{item.rightText}}</view>
+    <view class="info-card">
+      <view class="info-row">
+        <view class="row-copy">
+          <view class="row-label">常用耳机</view>
+          <view class="row-value {{profile.deviceModel ? '' : 'row-value--empty'}}">{{profile.deviceModel || '未填写'}}</view>
         </view>
       </view>
-      <view class="group-row empty-row" wx:if="{{!tests.length}}">暂无测试记录</view>
+      <view class="info-row">
+        <view class="row-copy">
+          <view class="row-label">累计听力测试</view>
+          <view class="row-value">{{profile.testCount}} 次</view>
+        </view>
+      </view>
+      <view class="info-row" bindtap="goSettings" hover-class="info-row--pressed" hover-stay-time="80">
+        <view class="row-copy">
+          <view class="row-label">每日用耳提醒</view>
+          <view class="row-value">{{profile.reminderThreshold}} 小时 <text class="row-chevron">›</text></view>
+        </view>
+      </view>
     </view>
 
-    <view class="section-title-row">健康日志</view>
-    <view class="note-composer">
-      <view class="note-types">
-        <view
-          class="note-type-chip {{noteTypeIndex === index ? 'note-type-chip--active' : ''}}"
-          wx:for="{{noteTypes}}"
-          wx:key="value"
-          data-index="{{index}}"
-          bindtap="onNoteTypeTap"
-        >{{item.label}}</view>
+    <view class="section-heading">
+      <view class="section-title">用耳行为</view>
+      <view class="section-caption">最近 30 天</view>
+    </view>
+    <view class="usage-card" wx:if="{{usage.weekly}}">
+      <view class="usage-primary usage-primary--{{usage.weekly.status}}">
+        <view class="usage-primary-top">
+          <view class="usage-primary-label">近 7 天日均</view>
+          <view class="usage-status">{{usage.weekly.statusText}}</view>
+        </view>
+        <view class="usage-primary-value">{{usage.weekly.avgHours}}<text>小时</text></view>
       </view>
+      <view class="usage-secondary">
+        <view class="usage-metric">
+          <view class="usage-metric-label">近 30 天日均</view>
+          <view class="usage-metric-value">{{usage.monthly ? usage.monthly.avgHours : '—'}} <text>小时</text></view>
+        </view>
+        <view class="usage-divider"></view>
+        <view class="usage-metric">
+          <view class="usage-metric-label">平均音量</view>
+          <view class="usage-metric-value">{{usage.weekly.avgVolume || '—'}} <text>分贝</text></view>
+        </view>
+      </view>
+    </view>
+    <view class="empty-card" wx:else>
+      <view class="empty-symbol">○</view>
+      <view class="empty-text">暂无用耳记录</view>
+    </view>
+
+    <view class="section-heading">
+      <view class="section-title">听力测试记录</view>
+      <view class="section-action" bindtap="goTestHistory">查看全部 <text>›</text></view>
+    </view>
+    <view class="record-card" wx:if="{{tests.length}}">
+      <view class="test-row" wx:for="{{tests}}" wx:key="id">
+        <view class="test-date">{{item.occurredAtText}}</view>
+        <view class="test-result">
+          <view class="ear-result">
+            <view class="ear-label">L</view>
+            <view class="ear-value">{{item.leftText}}</view>
+          </view>
+          <view class="ear-result">
+            <view class="ear-label ear-label--right">R</view>
+            <view class="ear-value">{{item.rightText}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="empty-card" wx:else>
+      <view class="empty-symbol">◇</view>
+      <view class="empty-text">暂无测试记录</view>
+      <view class="empty-action" bindtap="goTestHistory">开始测试</view>
+    </view>
+
+    <view class="section-heading">
+      <view class="section-title">健康日志</view>
+      <view class="section-caption">{{notes.length}} 条记录</view>
+    </view>
+    <view class="note-composer">
+      <scroll-view class="note-type-scroll" scroll-x show-scrollbar="{{false}}">
+        <view class="note-types">
+          <view
+            class="note-type-chip {{noteTypeIndex === index ? 'note-type-chip--active' : ''}}"
+            wx:for="{{noteTypes}}"
+            wx:key="value"
+            data-index="{{index}}"
+            bindtap="onNoteTypeTap"
+          >{{item.label}}</view>
+        </view>
+      </scroll-view>
       <textarea
         class="note-input"
         value="{{noteContent}}"
-        placeholder="记录症状、用药或用耳习惯"
+        placeholder="记录症状、用药或用耳习惯…"
         placeholder-class="note-placeholder"
         maxlength="200"
         auto-height
         bindinput="onNoteInput"
       ></textarea>
-      <view class="note-actions">
-        <view
-          class="note-save {{noteContent && !saving ? '' : 'note-save--disabled'}}"
-          bindtap="onSaveNote"
-        >{{saving ? '保存中' : '保存'}}</view>
+      <view class="note-footer">
+        <view class="note-count">{{noteContent.length}} / 200</view>
+        <view class="note-save {{noteContent && !saving ? '' : 'note-save--disabled'}}" bindtap="onSaveNote">
+          {{saving ? '保存中' : '保存记录'}}
+        </view>
       </view>
     </view>
-    <view class="group-list">
-      <view class="group-row" wx:for="{{notes}}" wx:key="id">
-        <view class="row-main">
-          <text class="row-title">{{item.occurredAtText}} · {{item.typeLabel}}</text>
-          <view class="row-summary note-content">{{item.content}}</view>
-          <view class="row-meta">{{item.source === 'agent' ? '由 AI 助手记录' : '由你记录'}}</view>
+    <view class="record-card note-list" wx:if="{{notes.length}}">
+      <view class="note-row" wx:for="{{notes}}" wx:key="id">
+        <view class="note-indicator note-indicator--{{item.type}}"></view>
+        <view class="note-row-main">
+          <view class="note-row-head">
+            <view class="note-row-title">{{item.typeLabel}}</view>
+            <view class="note-date">{{item.occurredAtText}}</view>
+          </view>
+          <view class="note-content">{{item.content}}</view>
+          <view class="note-source">{{item.source === 'agent' ? '由 AI 助手记录' : '由你记录'}}</view>
         </view>
         <view class="row-delete" data-id="{{item.id}}" bindtap="onDeleteNote">删除</view>
       </view>
-      <view class="group-row empty-row" wx:if="{{!notes.length}}">暂无记录</view>
     </view>
 
-    <view class="section-title-row">AI 记忆</view>
-    <view class="group-list">
-      <view class="group-row" wx:for="{{memory}}" wx:key="id">
-        <view class="row-main">
-          <text class="row-title">{{item.kindLabel}}</text>
-          <view class="row-summary note-content">{{item.content}}</view>
-          <view class="row-meta">{{item.createdAtText}}</view>
+    <view class="section-heading">
+      <view class="section-title">AI 记忆</view>
+      <view class="section-caption">为健康建议提供参考</view>
+    </view>
+    <view class="record-card" wx:if="{{memory.length}}">
+      <view class="memory-row" wx:for="{{memory}}" wx:key="id">
+        <view class="memory-mark">AI</view>
+        <view class="memory-main">
+          <view class="memory-kind">{{item.kindLabel}}</view>
+          <view class="memory-content">{{item.content}}</view>
+          <view class="memory-time">{{item.createdAtText}}</view>
         </view>
         <view class="row-delete" data-id="{{item.id}}" bindtap="onDeleteMemory">删除</view>
       </view>
-      <view class="group-row empty-row" wx:if="{{!memory.length}}">暂无 AI 记忆</view>
+    </view>
+    <view class="empty-card empty-card--compact" wx:else>
+      <view class="empty-text">暂无 AI 记忆</view>
     </view>
 
-    <view class="section-title-row">数据管理</view>
-    <view class="group-list">
-      <view class="group-row group-row--danger" bindtap="onClearArchive" hover-class="group-row--hover" hover-stay-time="80">
-        <text class="row-title row-title--danger">清空健康日志与 AI 记忆</text>
+    <view class="section-heading">
+      <view class="section-title">数据管理</view>
+    </view>
+    <view class="danger-card" bindtap="onClearArchive" hover-class="danger-card--pressed" hover-stay-time="80">
+      <view>
+        <view class="danger-title">清空健康日志与 AI 记忆</view>
+        <view class="danger-caption">听力测试和用耳记录会继续保留</view>
       </view>
+      <view class="danger-arrow">›</view>
     </view>
   </block>
 </view>

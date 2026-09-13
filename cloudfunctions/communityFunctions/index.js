@@ -5,7 +5,14 @@ cloud.init({
 
 const db = cloud.database()
 const _ = db.command
-const { SEED_POSTS, SEED_COMMENTS } = require('./seedData')
+const {
+  SEED_POSTS,
+  SEED_COMMENTS,
+  SEED_USERS,
+  LEGACY_SEED_POST_IDS,
+  LEGACY_SEED_COMMENT_IDS,
+  LEGACY_SEED_USER_IDS
+} = require('./seedData')
 const {
   TIP_ADOPTION_REWARD,
   normalizePostId,
@@ -13,6 +20,13 @@ const {
   getAdoptionIssue,
   buildAdoptionLedger
 } = require('./tipAdoption')
+const {
+  getPostRewardRule,
+  buildPostLedgerId,
+  getBeijingDateStr,
+  buildDailyCounterId,
+  buildPostLedger
+} = require('./postReward')
 
 const TAGS = {
   tip: '护耳妙招',
@@ -36,24 +50,81 @@ async function ensureCollection(name) {
   }
 }
 
-// 集合为空时自动写入种子数据（幂等：种子记录带固定 _id，重复写入会失败被忽略）
-async function seedIfEmpty() {
+// 种子数据同步（幂等，每个云函数实例只执行一次）：
+// 1. 固定 _id 覆盖写入当前种子内容，保证耳友圈演示内容始终最新、可控；
+// 2. 种子用户档案同步写入 users 集合（积分榜有内容、妙招采纳的作者积分账户可命中）；
+// 3. 清理旧版本已删除的种子帖/评论/用户（仅限 seed- 前缀的演示数据，真实用户数据不受影响）；
+// 4. 版本指纹：内容不变时跳过全部写入（seed_meta.version），冷启动不再重复 200+ 次写库；
+// 5. 同步失败不阻塞读接口：listPosts 等调用方对 ensureSeedData 单独 catch。
+const crypto = require('crypto')
+let seedSynced = false
+
+// 种子内容指纹（剔除每次冷启动都会重算的时间字段）
+function currentSeedVersion() {
+  const strip = (list, drop) => list.map(doc => {
+    const copy = { ...doc }
+    drop.forEach(key => delete copy[key])
+    return copy
+  })
+  const payload = JSON.stringify({
+    p: strip(SEED_POSTS, ['createTime']),
+    c: strip(SEED_COMMENTS, ['createTime']),
+    u: strip(SEED_USERS, ['createdAt', 'lastLoginAt', 'profileUpdatedAt'])
+  })
+  return 'v1-' + crypto.createHash('sha256').update(payload).digest('hex').slice(0, 16)
+}
+
+async function ensureSeedData() {
+  if (seedSynced) return
+  seedSynced = true
+
   await ensureCollection('community')
   await ensureCollection('comments')
+  await ensureCollection('users')
+  await ensureCollection('seed_meta')
 
-  const postsCount = (await db.collection('community').count()).total
-  if (postsCount === 0) {
-    await Promise.all(
-      SEED_POSTS.map(p => db.collection('community').add({ data: p }).catch(() => {}))
-    )
+  const version = currentSeedVersion()
+  try {
+    const meta = await db.collection('seed_meta').doc('version').get()
+    if (meta.data && meta.data.version === version) return
+  } catch (e) {
+    // meta 文档不存在（首次同步），继续执行写入
   }
 
-  const commentsCount = (await db.collection('comments').count()).total
-  if (commentsCount === 0) {
-    await Promise.all(
-      SEED_COMMENTS.map(c => db.collection('comments').add({ data: c }).catch(() => {}))
+  await Promise.all([
+    ...SEED_POSTS.map(({ _id, ...data }) =>
+      db.collection('community').doc(_id).set({ data }).catch(() => {})),
+    ...SEED_COMMENTS.map(({ _id, ...data }) =>
+      db.collection('comments').doc(_id).set({ data }).catch(() => {})),
+    ...SEED_USERS.map(({ _id, ...data }) =>
+      db.collection('users').doc(_id).set({ data }).catch(() => {}))
+  ])
+
+  const currentPostIds = new Set(SEED_POSTS.map(p => p._id))
+  const currentCommentIds = new Set(SEED_COMMENTS.map(c => c._id))
+  const currentUserIds = new Set(SEED_USERS.map(u => u._id))
+  const stalePostIds = LEGACY_SEED_POST_IDS.filter(id => !currentPostIds.has(id))
+  const staleCommentIds = LEGACY_SEED_COMMENT_IDS.filter(id => !currentCommentIds.has(id))
+  const staleUserIds = LEGACY_SEED_USER_IDS.filter(id => !currentUserIds.has(id))
+
+  const cleanups = []
+  if (stalePostIds.length) {
+    cleanups.push(
+      db.collection('community').where({ _id: _.in(stalePostIds) }).remove(),
+      db.collection('comments').where({ postId: _.in(stalePostIds) }).remove()
     )
   }
+  if (staleCommentIds.length) {
+    cleanups.push(db.collection('comments').where({ _id: _.in(staleCommentIds) }).remove())
+  }
+  if (staleUserIds.length) {
+    cleanups.push(db.collection('users').where({ _id: _.in(staleUserIds) }).remove())
+  }
+  await Promise.all(cleanups.map(p => p.catch(() => {})))
+
+  await db.collection('seed_meta').doc('version')
+    .set({ data: { version, syncedAt: new Date() } })
+    .catch(() => {})
 }
 
 function withTagLabel(post) {
@@ -91,7 +162,9 @@ async function countCommentsByPosts(postIds) {
 
 // 帖子列表：tag 传 'all' 或具体板块 key
 async function listPosts(event) {
-  await seedIfEmpty()
+  await ensureSeedData().catch(e => {
+    console.error('[seed] 种子同步失败（不影响读取）:', e && e.message)
+  })
   const collection = db.collection('community')
   const condition = event.tag && event.tag !== 'all' ? collection.where({ tag: event.tag }) : collection
   const res = await condition.orderBy('createTime', 'desc').limit(50).get()
@@ -106,7 +179,9 @@ async function listPosts(event) {
 
 // 帖子详情
 async function getPost(event) {
-  await seedIfEmpty()
+  await ensureSeedData().catch(e => {
+    console.error('[seed] 种子同步失败（不影响读取）:', e && e.message)
+  })
   try {
     const res = await db.collection('community').doc(event.id).get()
     if (!res.data) return { success: true, data: null }
@@ -278,12 +353,90 @@ async function addPost(event) {
     createTime: new Date()
   }
   const res = await db.collection('community').add({ data: post })
-  return { success: true, data: { _id: res._id } }
+  // 帖子落库后按积分规则自动发放奖励；发放失败只影响本次奖励，不回滚发帖
+  const reward = await awardPostReward({ postId: res._id, openid: OPENID, tag })
+    .catch(() => ({ pointsAwarded: 0 }))
+  return { success: true, data: { _id: res._id, pointsAwarded: reward.pointsAwarded || 0 } }
+}
+
+// 发帖积分发放：规则金额与每日额度由云端决定（postReward.js），客户端无法传积分数值。
+// 事务内幂等防重（流水号锁定单篇帖子）并校验每日额度，防止并发发帖绕过限额。
+async function awardPostReward({ postId, openid, tag }) {
+  if (!openid || !postId) return { pointsAwarded: 0, reason: 'no-openid' }
+
+  await Promise.all([
+    ensureCollection('users'),
+    ensureCollection('points_ledger'),
+    ensureCollection('points_daily_counters')
+  ])
+
+  const author = await getUserProfileByOpenid(openid)
+  if (!author || !author._id) return { pointsAwarded: 0, reason: 'no-account' }
+
+  const rule = getPostRewardRule(tag)
+  const ledgerId = buildPostLedgerId(postId)
+  const dateStr = getBeijingDateStr(new Date())
+  const counterId = buildDailyCounterId(openid, dateStr, rule.category)
+
+  const transactionResult = await db.runTransaction(async transaction => {
+    const post = await getDocumentOrNull(transaction.collection('community'), postId)
+    if (!post || post.openid !== openid) return { pointsAwarded: 0, reason: 'post-missing' }
+
+    const existingLedger = await getDocumentOrNull(
+      transaction.collection('points_ledger'),
+      ledgerId
+    )
+    if (existingLedger) return { pointsAwarded: 0, reason: 'duplicate' }
+
+    const user = await getDocumentOrNull(transaction.collection('users'), author._id)
+    if (!user || user.openid !== openid) return { pointsAwarded: 0, reason: 'no-account' }
+
+    const counter = await getDocumentOrNull(
+      transaction.collection('points_daily_counters'),
+      counterId
+    )
+    const used = Math.max(0, Math.round(Number(counter && counter.count) || 0))
+    if (used >= rule.dailyLimit) {
+      // 超出每日额度仍要落帖子标记，便于排查“为什么这篇没发分”
+      await transaction.collection('community').doc(postId).update({
+        data: { rewardPoints: 0, rewardSkipReason: 'daily-limit', rewardEvaluatedAt: new Date() }
+      })
+      return { pointsAwarded: 0, reason: 'daily-limit' }
+    }
+
+    const now = new Date()
+    const nextBalance = Math.max(0, Math.round(Number(user.pointsBalance) || 0)) + rule.points
+
+    await transaction.collection('users').doc(author._id).update({
+      data: { pointsBalance: nextBalance, pointsUpdatedAt: now }
+    })
+    await transaction.collection('points_ledger').doc(ledgerId).set({
+      data: buildPostLedger({ postId, authorOpenid: openid, tag, createdAt: now })
+    })
+    if (counter) {
+      await transaction.collection('points_daily_counters').doc(counterId).update({
+        data: { count: used + 1, updatedAt: now }
+      })
+    } else {
+      await transaction.collection('points_daily_counters').doc(counterId).set({
+        data: { openid, date: dateStr, category: rule.category, count: 1, updatedAt: now }
+      })
+    }
+    await transaction.collection('community').doc(postId).update({
+      data: { rewardPoints: rule.points, rewardLedgerId: ledgerId, rewardEvaluatedAt: now }
+    })
+
+    return { pointsAwarded: rule.points, balance: nextBalance }
+  })
+
+  return transactionResult.result || transactionResult
 }
 
 // 我的帖子：按当前用户 openid 查询（未登录时为匿名，返回空）
 async function myPosts(event) {
-  await seedIfEmpty()
+  await ensureSeedData().catch(e => {
+    console.error('[seed] 种子同步失败（不影响读取）:', e && e.message)
+  })
   const { OPENID } = cloud.getWXContext()
   if (!OPENID) return { success: true, data: [] }
   const res = await db.collection('community')

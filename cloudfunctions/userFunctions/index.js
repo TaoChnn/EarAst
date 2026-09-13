@@ -35,6 +35,8 @@ const POINTS_LEDGER_LIMIT = 50
 // 积分排行榜单次返回上限，防止一次拉全表拖垮云函数
 const POINTS_LEADERBOARD_LIMIT = 50
 const SHOP_ORDER_LIMIT = 30
+// 商品图已迁移至云存储 static/ 目录（与小程序端 points-shop.js 的 CDN 前缀保持一致）
+const CDN = 'cloud://cloud1-d0gtoekxv3cf11259.636c-cloud1-d0gtoekxv3cf11259-1472708489/static/'
 const SHOP_CATALOG = [
   {
     id: 'zju-badge',
@@ -44,7 +46,7 @@ const SHOP_CATALOG = [
     categoryLabel: '浙大文创',
     points: 80,
     stock: 50,
-    image: '/images/shoppings/IMG_2224.JPG'
+    image: CDN + 'zju-badge.jpg'
   },
   {
     id: 'zju-portable-cup',
@@ -54,7 +56,7 @@ const SHOP_CATALOG = [
     categoryLabel: '浙大文创',
     points: 260,
     stock: 24,
-    image: '/images/shoppings/IMG_2222.JPG'
+    image: CDN + 'zju-portable-cup.jpg'
   },
   {
     id: 'zju-thermal-mug',
@@ -64,7 +66,7 @@ const SHOP_CATALOG = [
     categoryLabel: '浙大文创',
     points: 360,
     stock: 20,
-    image: '/images/shoppings/IMG_2225.JPG'
+    image: CDN + 'zju-thermal-mug.jpg'
   },
   {
     id: 'zju-tshirt',
@@ -74,7 +76,7 @@ const SHOP_CATALOG = [
     categoryLabel: '浙大文创',
     points: 680,
     stock: 18,
-    image: '/images/shoppings/浙大t恤.webp'
+    image: CDN + 'zju-tshirt.webp'
   },
   {
     id: 'zju-graduation-bear',
@@ -84,7 +86,7 @@ const SHOP_CATALOG = [
     categoryLabel: '浙大文创',
     points: 980,
     stock: 12,
-    image: '/images/shoppings/IMG_2223.JPG'
+    image: CDN + 'zju-graduation-bear.jpg'
   },
   {
     id: 'airpods-pro',
@@ -94,7 +96,7 @@ const SHOP_CATALOG = [
     categoryLabel: '数码好物',
     points: 5200,
     stock: 8,
-    image: '/images/shoppings/airpodspro.jpg'
+    image: CDN + 'airpodspro.jpg'
   },
   {
     id: 'huawei-freebuds-pro',
@@ -104,7 +106,7 @@ const SHOP_CATALOG = [
     categoryLabel: '数码好物',
     points: 4600,
     stock: 8,
-    image: '/images/shoppings/huaweifreebudspro.jpg'
+    image: CDN + 'huaweifreebudspro.jpg'
   },
   {
     id: 'sony-wh1000xm6',
@@ -114,7 +116,7 @@ const SHOP_CATALOG = [
     categoryLabel: '数码好物',
     points: 7600,
     stock: 5,
-    image: '/images/shoppings/sonyxm6.png'
+    image: CDN + 'sonyxm6.jpg'
   },
   {
     id: 'airpods-max',
@@ -124,7 +126,7 @@ const SHOP_CATALOG = [
     categoryLabel: '数码好物',
     points: 9800,
     stock: 4,
-    image: '/images/shoppings/airpodsmax.jpg'
+    image: CDN + 'airpodsmax.jpg'
   }
 ]
 

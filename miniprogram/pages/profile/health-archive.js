@@ -35,10 +35,22 @@ function normalizeArchive(data) {
     ? source.profile
     : { deviceModel: '', reminderThreshold: 2, testCount: 0 }
   const usage = source.usage && typeof source.usage === 'object' ? source.usage : {}
+  const items = Array.isArray(completeness.items) ? completeness.items : []
+  const percent = Math.max(0, Math.min(100, Math.round(Number(completeness.percent) || 0)))
+  const missing = Array.isArray(completeness.missing) ? completeness.missing : []
+  const doneCount = items.length
+    ? items.filter(item => item && item.done).length
+    : Math.round((percent / 100) * 6)
+  const totalCount = items.length || 6
 
   return {
     completeness: {
-      missingText: Array.isArray(completeness.missing) ? completeness.missing.join('、') : ''
+      percent,
+      doneCount,
+      totalCount,
+      missingText: missing.join('、'),
+      nextMissing: missing[0] || '',
+      statusText: percent >= 100 ? '档案信息完整' : percent >= 60 ? '继续补充，让建议更准确' : '完善档案，获得更准确的建议'
     },
     profile,
     tests: (Array.isArray(source.tests) ? source.tests : []).map(item => ({
@@ -60,7 +72,7 @@ Page({
   data: {
     loading: true,
     loggedIn: false,
-    completeness: { missingText: '' },
+    completeness: { percent: 0, doneCount: 0, totalCount: 6, missingText: '', nextMissing: '', statusText: '完善档案，获得更准确的建议' },
     profile: { deviceModel: '', reminderThreshold: 2, testCount: 0 },
     tests: [],
     notes: [],

@@ -1,0 +1,115 @@
+<view class="device-page device-page--{{deviceState}}">
+  <view class="device-hero">
+    <view class="hero-shape hero-shape--one"></view>
+    <view class="hero-shape hero-shape--two"></view>
+
+    <view class="device-visual {{deviceState === 'scanning' || deviceState === 'connecting' ? 'device-visual--working' : ''}}">
+      <view class="signal-ring signal-ring--outer"></view>
+      <view class="signal-ring signal-ring--inner"></view>
+      <view class="device-core">
+        <image class="device-core-icon" src="/images/icons/device-board.svg" mode="aspectFit"></image>
+        <view class="device-led"></view>
+      </view>
+    </view>
+
+    <view class="hero-eyebrow">
+      <view class="hero-status-dot"></view>
+      <text>{{view.eyebrow}}</text>
+    </view>
+    <view class="hero-title">{{view.title}}</view>
+    <view class="hero-description">{{view.description}}</view>
+  </view>
+
+  <view class="found-card" wx:if="{{deviceState === 'found' || deviceState === 'connecting'}}">
+    <view class="found-device-icon">
+      <image src="/images/icons/device-board.svg" mode="aspectFit"></image>
+    </view>
+    <view class="found-device-copy">
+      <view class="found-device-name">HearHealth H1</view>
+      <view class="found-device-meta">HH-DEV-01 · 信号良好</view>
+    </view>
+    <view class="signal-bars">
+      <view class="signal-bar signal-bar--one"></view>
+      <view class="signal-bar signal-bar--two"></view>
+      <view class="signal-bar signal-bar--three"></view>
+    </view>
+  </view>
+
+  <view class="connected-content" wx:if="{{deviceState === 'connected'}}">
+    <view class="device-info-card">
+      <view class="device-info-main">
+        <view class="device-info-label">连接状态</view>
+        <view class="device-info-value">
+          <view class="online-dot"></view>
+          <text>在线并持续同步</text>
+        </view>
+      </view>
+      <view class="battery-wrap">
+        <view class="battery-shell"><view class="battery-level"></view></view>
+        <text>86%</text>
+      </view>
+    </view>
+
+    <view class="section-heading">
+      <text>实时数据</text>
+      <text class="section-heading-meta">更新于 {{lastSync}}</text>
+    </view>
+    <view class="metrics-grid">
+      <view class="metric-card metric-card--{{item.tone}}" wx:for="{{metrics}}" wx:key="id">
+        <view class="metric-accent"></view>
+        <view class="metric-label">{{item.label}}</view>
+        <view class="metric-value-row">
+          <text class="metric-value">{{item.value}}</text>
+          <text class="metric-unit" wx:if="{{item.unit}}">{{item.unit}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="device-details">
+      <view class="detail-row">
+        <text class="detail-label">设备型号</text>
+        <text class="detail-value">HH-DEV-01</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">固件版本</text>
+        <text class="detail-value">v0.9 Demo</text>
+      </view>
+      <view class="detail-row detail-row--last">
+        <text class="detail-label">连接方式</text>
+        <text class="detail-value">Bluetooth Low Energy</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="capability-card" wx:else>
+    <view class="capability-heading">连接后可以</view>
+    <view class="capability-list">
+      <view class="capability-item">
+        <view class="capability-icon capability-icon--noise"><view class="wave-line wave-line--one"></view><view class="wave-line wave-line--two"></view><view class="wave-line wave-line--three"></view></view>
+        <view class="capability-copy"><view class="capability-title">监测环境噪声</view><view class="capability-desc">了解每日声音暴露水平</view></view>
+      </view>
+      <view class="capability-item">
+        <view class="capability-icon capability-icon--time"><view class="clock-hand clock-hand--hour"></view><view class="clock-hand clock-hand--minute"></view></view>
+        <view class="capability-copy"><view class="capability-title">记录佩戴时长</view><view class="capability-desc">自动形成连续健康记录</view></view>
+      </view>
+      <view class="capability-item capability-item--last">
+        <view class="capability-icon capability-icon--volume"><view class="volume-pillar volume-pillar--one"></view><view class="volume-pillar volume-pillar--two"></view><view class="volume-pillar volume-pillar--three"></view></view>
+        <view class="capability-copy"><view class="capability-title">守护安全音量</view><view class="capability-desc">音量过高时及时提醒</view></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="device-actions">
+    <button
+      class="primary-action {{deviceState === 'scanning' || deviceState === 'connecting' ? 'primary-action--disabled' : ''}}"
+      bindtap="onPrimaryAction"
+      disabled="{{deviceState === 'scanning' || deviceState === 'connecting'}}"
+      hover-class="primary-action--pressed"
+    >
+      <view class="action-spinner" wx:if="{{deviceState === 'scanning' || deviceState === 'connecting'}}"></view>
+      <text>{{view.action}}</text>
+    </button>
+    <button class="disconnect-action" wx:if="{{deviceState === 'connected'}}" bindtap="onDisconnect">断开连接</button>
+    <view class="demo-note">演示版本 · 当前展示为前端模拟数据</view>
+  </view>
+</view>

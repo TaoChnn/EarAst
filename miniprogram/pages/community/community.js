@@ -138,7 +138,12 @@ Page({
     callCommunity('listPosts', { tag })
       .then(list => {
         this.setData({
-          postList: list.map(p => ({ ...p, createTime: formatTime(p.createTime) }))
+          postList: list.map(p => ({
+            ...p,
+            createTime: formatTime(p.createTime),
+            // 兼容旧数据：无 images 数组时回退到单张 cover
+            displayImages: p.images && p.images.length ? p.images : (p.cover ? [p.cover] : [])
+          }))
         })
       })
       .catch(() => {
@@ -170,6 +175,14 @@ Page({
 
   onGoPointsShop() {
     wx.navigateTo({ url: '/pages/profile/points-shop' })
+  },
+
+  // 广场配图点击预览（catchtap 已阻止冒泡进详情页）
+  onPreviewPostImage(e) {
+    const { postIndex, src } = e.currentTarget.dataset
+    const post = this.data.postList[postIndex]
+    if (!post || !post.displayImages || !post.displayImages.length) return
+    wx.previewImage({ current: src, urls: post.displayImages })
   },
 
   // 头像加载失败（云存储权限/文件缺失等）时回落到默认头像

@@ -198,10 +198,16 @@ Page({
         summary: content.length > 60 ? content.slice(0, 60) + '…' : content,
         images: fileIDs
       }))
-      .then(() => {
+      .then(data => {
         wx.hideLoading()
-        wx.showToast({ title: '发布成功', icon: 'success' })
-        setTimeout(() => wx.navigateBack(), 800)
+        // 云端按积分规则发放，返回本次实际到账积分（超每日额度时为 0）
+        const awarded = (data && data.pointsAwarded) || 0
+        wx.showToast({
+          title: awarded > 0 ? `发布成功 +${awarded}积分` : '发布成功',
+          icon: awarded > 0 ? 'none' : 'success',
+          duration: awarded > 0 ? 2000 : 1500
+        })
+        setTimeout(() => wx.navigateBack(), awarded > 0 ? 1800 : 800)
       })
       .catch(err => {
         wx.hideLoading()

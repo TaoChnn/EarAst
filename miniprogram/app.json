@@ -6,6 +6,7 @@
     "pages/stats/stats",
     "pages/community/community",
     "pages/profile/profile",
+    "pages/profile/device-connect",
     "pages/test/guide",
     "pages/test/process",
     "pages/test/report",

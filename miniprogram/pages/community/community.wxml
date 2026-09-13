@@ -105,8 +105,23 @@
 
             <view class="post-content" wx:if="{{item.content}}">{{item.content}}</view>
 
-            <view class="post-thumb" wx:if="{{item.cover}}">
-              <image class="post-thumb-img" src="{{item.cover}}" mode="aspectFill"></image>
+            <!-- 配图：单图大方图，多图三列网格；点击预览（catchtap 防止冒泡进详情） -->
+            <view
+              class="post-thumb post-thumb--{{item.displayImages.length}}"
+              wx:if="{{item.displayImages.length}}"
+            >
+              <image
+                wx:for="{{item.displayImages}}"
+                wx:for-item="img"
+                wx:for-index="imgIndex"
+                wx:key="*this"
+                class="post-thumb-img"
+                src="{{img}}"
+                mode="aspectFill"
+                catchtap="onPreviewPostImage"
+                data-post-index="{{index}}"
+                data-src="{{img}}"
+              ></image>
             </view>
 
             <view class="post-stats">

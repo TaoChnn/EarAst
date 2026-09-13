@@ -2,16 +2,19 @@ const { callUser, isLoggedIn } = require('../../utils/auth')
 
 const LOGIN_URL = '/pages/splash/splash?redirect=/pages/profile/points-shop'
 
+// 商品图已迁移至云存储 static/ 目录，减小小程序主包体积；<image> 可直接渲染 fileID
+const CDN = 'cloud://cloud1-d0gtoekxv3cf11259.636c-cloud1-d0gtoekxv3cf11259-1472708489/static/'
+
 const PRODUCT_CATALOG = [
-  { id: 'zju-badge', name: '浙大校徽纪念章', description: '经典蓝金珐琅徽章', category: 'culture', categoryLabel: '浙大文创', points: 80, stock: 50, remainingStock: 50, image: '/images/shoppings/IMG_2224.JPG' },
-  { id: 'zju-portable-cup', name: '浙大文创随行杯', description: '轻巧便携，校园插画设计', category: 'culture', categoryLabel: '浙大文创', points: 260, stock: 24, remainingStock: 24, image: '/images/shoppings/IMG_2222.JPG' },
-  { id: 'zju-thermal-mug', name: '浙大 1897 保温杯', description: '大容量保温杯，蓝白校色', category: 'culture', categoryLabel: '浙大文创', points: 360, stock: 20, remainingStock: 20, image: '/images/shoppings/IMG_2225.JPG' },
-  { id: 'zju-tshirt', name: '浙江大学纪念 T 恤', description: '酒红色经典校徽款', category: 'culture', categoryLabel: '浙大文创', points: 680, stock: 18, remainingStock: 18, image: '/images/shoppings/浙大t恤.webp' },
-  { id: 'zju-graduation-bear', name: '浙大毕业纪念熊', description: '学位服造型校园纪念玩偶', category: 'culture', categoryLabel: '浙大文创', points: 980, stock: 12, remainingStock: 12, image: '/images/shoppings/IMG_2223.JPG' },
-  { id: 'airpods-pro', name: 'AirPods Pro', description: '入耳式主动降噪耳机', category: 'audio', categoryLabel: '数码好物', points: 5200, stock: 8, remainingStock: 8, image: '/images/shoppings/airpodspro.jpg' },
-  { id: 'huawei-freebuds-pro', name: 'HUAWEI FreeBuds Pro', description: '智慧动态降噪真无线耳机', category: 'audio', categoryLabel: '数码好物', points: 4600, stock: 8, remainingStock: 8, image: '/images/shoppings/huaweifreebudspro.jpg' },
-  { id: 'sony-wh1000xm6', name: 'Sony WH-1000XM6', description: '旗舰头戴式降噪耳机', category: 'audio', categoryLabel: '数码好物', points: 7600, stock: 5, remainingStock: 5, image: '/images/shoppings/sonyxm6.png' },
-  { id: 'airpods-max', name: 'AirPods Max', description: '高保真头戴式无线耳机', category: 'audio', categoryLabel: '数码好物', points: 9800, stock: 4, remainingStock: 4, image: '/images/shoppings/airpodsmax.jpg' }
+  { id: 'zju-badge', name: '浙大校徽纪念章', description: '经典蓝金珐琅徽章', category: 'culture', categoryLabel: '浙大文创', points: 80, stock: 50, remainingStock: 50, image: CDN + 'zju-badge.jpg' },
+  { id: 'zju-portable-cup', name: '浙大文创随行杯', description: '轻巧便携，校园插画设计', category: 'culture', categoryLabel: '浙大文创', points: 260, stock: 24, remainingStock: 24, image: CDN + 'zju-portable-cup.jpg' },
+  { id: 'zju-thermal-mug', name: '浙大 1897 保温杯', description: '大容量保温杯，蓝白校色', category: 'culture', categoryLabel: '浙大文创', points: 360, stock: 20, remainingStock: 20, image: CDN + 'zju-thermal-mug.jpg' },
+  { id: 'zju-tshirt', name: '浙江大学纪念 T 恤', description: '酒红色经典校徽款', category: 'culture', categoryLabel: '浙大文创', points: 680, stock: 18, remainingStock: 18, image: CDN + 'zju-tshirt.webp' },
+  { id: 'zju-graduation-bear', name: '浙大毕业纪念熊', description: '学位服造型校园纪念玩偶', category: 'culture', categoryLabel: '浙大文创', points: 980, stock: 12, remainingStock: 12, image: CDN + 'zju-graduation-bear.jpg' },
+  { id: 'airpods-pro', name: 'AirPods Pro', description: '入耳式主动降噪耳机', category: 'audio', categoryLabel: '数码好物', points: 5200, stock: 8, remainingStock: 8, image: CDN + 'airpodspro.jpg' },
+  { id: 'huawei-freebuds-pro', name: 'HUAWEI FreeBuds Pro', description: '智慧动态降噪真无线耳机', category: 'audio', categoryLabel: '数码好物', points: 4600, stock: 8, remainingStock: 8, image: CDN + 'huaweifreebudspro.jpg' },
+  { id: 'sony-wh1000xm6', name: 'Sony WH-1000XM6', description: '旗舰头戴式降噪耳机', category: 'audio', categoryLabel: '数码好物', points: 7600, stock: 5, remainingStock: 5, image: CDN + 'sonyxm6.jpg' },
+  { id: 'airpods-max', name: 'AirPods Max', description: '高保真头戴式无线耳机', category: 'audio', categoryLabel: '数码好物', points: 9800, stock: 4, remainingStock: 4, image: CDN + 'airpodsmax.jpg' }
 ]
 
 const CATEGORIES = [
@@ -19,6 +22,11 @@ const CATEGORIES = [
   { id: 'culture', label: '浙大文创' },
   { id: 'audio', label: '数码好物' }
 ]
+
+const PRODUCT_BY_ID = PRODUCT_CATALOG.reduce((result, item) => {
+  result[item.id] = item
+  return result
+}, {})
 
 function formatDate(timestamp) {
   if (!Number(timestamp)) return ''
@@ -29,16 +37,20 @@ function formatDate(timestamp) {
 }
 
 function decorateProducts(products, balance) {
-  return products.map(item => ({
-    ...item,
-    soldOut: item.remainingStock <= 0,
-    canRedeem: !item.redeemed && item.remainingStock > 0 && balance >= item.points,
-    actionText: item.redeemed
+  return products.map(item => {
+    const localProduct = PRODUCT_BY_ID[item.id] || {}
+    const product = { ...item, image: localProduct.image || item.image }
+    return {
+    ...product,
+    soldOut: product.remainingStock <= 0,
+    canRedeem: !product.redeemed && product.remainingStock > 0 && balance >= product.points,
+    actionText: product.redeemed
       ? '已兑换'
-      : item.remainingStock <= 0
+      : product.remainingStock <= 0
         ? '已兑完'
-        : balance >= item.points ? '立即兑换' : `还差 ${item.points - balance} 分`
-  }))
+        : balance >= product.points ? '立即兑换' : `还差 ${product.points - balance} 分`
+    }
+  })
 }
 
 function decorateOrders(orders) {
@@ -50,6 +62,7 @@ function decorateOrders(orders) {
   }
   return (orders || []).map(item => ({
     ...item,
+    productImage: (PRODUCT_BY_ID[item.productId] && PRODUCT_BY_ID[item.productId].image) || item.productImage,
     statusLabel: statusLabels[item.status] || '处理中',
     timeText: formatDate(item.createdAt)
   }))

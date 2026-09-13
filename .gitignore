@@ -32,3 +32,8 @@ yarn-error.log*
 
 # Claude Code 本地配置
 .claude/settings.local.json
+
+# 头像种子工具的构建产物与待上传素材（tools/seed-avatars.js）
+tools/.avatar-build/
+头像-上传这87张/
+avatar素材/

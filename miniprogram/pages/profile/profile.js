@@ -4,6 +4,7 @@ const { getSession, isLoggedIn } = require('../../utils/auth')
 
 // 从本页去开屏页补登录后回跳到「我的」（tab 页）
 const LOGIN_URL = '/pages/splash/splash?redirect=/pages/profile/profile'
+const DEVICE_STORAGE_KEY = 'hearhealth_demo_device'
 const initialUserProfile = getUserProfile()
 const initialUser = (getSession() || {}).user || {}
 
@@ -20,6 +21,7 @@ Page({
     defaultBio: DEFAULT_BIO,
     userProfile: initialUserProfile,
     loggedIn: false,
+    deviceConnected: false,
     stats: [
       { value: formatTotalUsage(initialUser.usageSeconds), label: '累计用耳', target: 'usage-stats' },
       { value: String(initialUser.testCount || 0), label: '测试次数', target: 'test-history' },
@@ -80,6 +82,7 @@ Page({
       this.getTabBar().setData({ selected: 3 });
     }
     this.loadUserProfile()
+    this.loadDeviceStatus()
     this.loadPostCount()
     // 只展示当前会话，不在这里补登录：游客进「我的」不该被后台建档，
     // 建档只发生在开屏页/登录入口用户主动点击并同意协议之后（issue #36）
@@ -89,6 +92,11 @@ Page({
 
   loadUserProfile() {
     this.setData({ userProfile: getUserProfile() })
+  },
+
+  loadDeviceStatus() {
+    const savedDevice = wx.getStorageSync(DEVICE_STORAGE_KEY) || {}
+    this.setData({ deviceConnected: Boolean(savedDevice.connected) })
   },
 
   applySession() {
