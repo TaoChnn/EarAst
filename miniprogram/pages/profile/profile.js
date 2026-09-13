@@ -51,9 +51,9 @@ Page({
           },
           {
             id: 'skill-library',
-            title: '护耳技能库',
+            title: '收藏的技能',
             icon: '/images/icons/goods.png',
-            url: '/pages/skill/list'
+            url: '/pages/skill/list?mode=favorites'
           },
           {
             id: 'points-shop',

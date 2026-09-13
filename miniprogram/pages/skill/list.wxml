@@ -1,6 +1,6 @@
 <view class="skill-page">
-  <!-- 来源切换（iOS 分段控件） -->
-  <view class="source-switch" role="tablist" aria-label="技能来源">
+  <!-- 来源切换（iOS 分段控件）：收藏模式只看官方技能，隐藏切换 -->
+  <view class="source-switch" role="tablist" aria-label="技能来源" wx:if="{{!favoritesMode}}">
     <view
       class="source-tab {{activeSource === item.key ? 'source-tab--active' : ''}}"
       wx:for="{{sourceTabs}}"
@@ -23,16 +23,16 @@
         aria-label="耳朵与声波组成的护耳主题插画"
       ></image>
       <view class="guide-hero__content">
-        <view class="guide-hero__eyebrow">听力健康指南</view>
-        <view class="guide-hero__title">好好听，也好好保护。</view>
-        <view class="guide-hero__desc">从音量、时长到日常习惯，用简单的方法守住每一次聆听。</view>
-        <view class="guide-hero__meta">{{developerTotal}} 篇专业指南</view>
+        <view class="guide-hero__eyebrow">{{favoritesMode ? '我的收藏' : '听力健康指南'}}</view>
+        <view class="guide-hero__title">{{favoritesMode ? '你收藏的护耳指南' : '好好听，也好好保护。'}}</view>
+        <view class="guide-hero__desc">{{favoritesMode ? '在详情页点亮星标的技能都会收在这里，方便随时回看。' : '从音量、时长到日常习惯，用简单的方法守住每一次聆听。'}}</view>
+        <view class="guide-hero__meta">{{favoritesMode ? '共 ' + developerSkills.length + ' 篇收藏' : developerTotal + ' 篇专业指南'}}</view>
       </view>
     </view>
 
     <!-- 分类筛选 -->
     <view class="section-heading">
-      <view class="section-title">探索指南</view>
+      <view class="section-title">{{favoritesMode ? '我的收藏' : '探索指南'}}</view>
       <view class="section-count">{{developerSkills.length}} 篇</view>
     </view>
     <scroll-view class="chip-scroll" scroll-x="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}">
@@ -65,6 +65,13 @@
         </view>
         <view class="guide-row__arrow">›</view>
       </view>
+    </view>
+
+    <!-- 收藏模式空态：引导去完整技能库 -->
+    <view class="empty-fav" wx:if="{{favoritesMode && !developerSkills.length}}">
+      <view class="empty-fav__title">还没有收藏的技能</view>
+      <view class="empty-fav__desc">在技能详情页点亮右上角星标，就会收进这里</view>
+      <view class="empty-fav__btn" bindtap="onGoLibrary" hover-class="empty-fav__btn--pressed">去逛技能库</view>
     </view>
 
     <view class="legal-note">官方内容为健康科普整理，不替代医生诊断或治疗建议。</view>

@@ -215,5 +215,6 @@ module.exports = {
   isLoggedOut,
   login,
   logout,
+  mergeFavorites,
   revokeConsent
 }

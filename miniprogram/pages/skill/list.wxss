@@ -278,3 +278,37 @@
   font-size: var(--text-micro-legal);
   line-height: 1.3;
 }
+
+/* 收藏模式空态 */
+.empty-fav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-xxl) var(--spacing-lg);
+  text-align: center;
+}
+
+.empty-fav__title {
+  color: var(--color-ink);
+  font-size: var(--text-caption-strong);
+  font-weight: 600;
+}
+
+.empty-fav__desc {
+  margin-top: var(--spacing-xs);
+  color: var(--color-ink-muted-48);
+  font-size: var(--text-caption);
+}
+
+.empty-fav__btn {
+  margin-top: var(--spacing-lg);
+  padding: 18rpx 56rpx;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--text-caption-strong);
+  border-radius: 999rpx;
+}
+
+.empty-fav__btn--pressed {
+  opacity: 0.8;
+}
