@@ -1,5 +1,28 @@
 // 帖子详情页 —— 数据来自云函数 communityFunctions
 const { formatTime, callCommunity } = require('./util')
+const { isLoggedIn } = require('../../utils/auth')
+
+// 本机收藏的帖子 id 列表：游客收藏只留本机，登录用户云端与本机各记一份
+const POST_FAVS_KEY = 'post_favs'
+
+function getLocalPostFavs() {
+  try {
+    const favs = wx.getStorageSync(POST_FAVS_KEY)
+    return Array.isArray(favs) ? favs : []
+  } catch (e) {
+    return []
+  }
+}
+
+function setLocalPostFav(postId, faved) {
+  const favs = getLocalPostFavs().filter(id => id !== postId)
+  if (faved) favs.unshift(postId)
+  try {
+    wx.setStorageSync(POST_FAVS_KEY, favs)
+  } catch (e) {
+    // 存储失败时仅保留本次会话内的状态
+  }
+}
 
 Page({
   data: {
@@ -32,8 +55,11 @@ Page({
           const displayImages = post.images && post.images.length
             ? post.images
             : (post.cover ? [post.cover] : [])
+          // 收藏状态：云端记录优先（登录），游客回落到本机收藏
+          const faved = post.faved === true || getLocalPostFavs().includes(id)
           this.setData({
             loading: false,
+            faved,
             post: { ...post, createTime: formatTime(post.createTime), displayImages }
           })
         } else {
@@ -74,13 +100,23 @@ Page({
 
   onFav() {
     const { post, faved } = this.data
-    const delta = faved ? -1 : 1
+    if (!post) return
+    const nextFaved = !faved
     this.setData({
-      faved: !faved,
-      'post.favCount': post.favCount + delta
+      faved: nextFaved,
+      'post.favCount': Math.max(0, (post.favCount || 0) + (nextFaved ? 1 : -1))
     })
-    callCommunity('updateCount', { id: this.postId, field: 'favCount', delta }).catch(() => {})
-    wx.showToast({ title: faved ? '已取消收藏' : '收藏成功', icon: 'none' })
+    // 收藏关系落本机；登录用户再记到云端（favCount 由云函数随收藏关系增减，
+    // 不再走裸计数接口，否则「我的收藏」查不到归属）
+    setLocalPostFav(this.postId, nextFaved)
+    if (isLoggedIn()) {
+      callCommunity(nextFaved ? 'favoritePost' : 'unfavoritePost', { postId: this.postId })
+        .catch(() => {})
+    }
+    wx.showToast({
+      title: faved ? '已取消收藏' : (isLoggedIn() ? '收藏成功' : '已收藏，登录后同步'),
+      icon: 'none'
+    })
   },
 
   onInputComment(e) {

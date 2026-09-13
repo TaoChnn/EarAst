@@ -25,6 +25,7 @@ const SYNCED_KEYS = [
   'hearHealthUserProfile',    // 个人资料（utils/user-profile）
   'hearHealthSettings',       // 提醒与通知设置（utils/app-settings）
   'skill_favs',               // 护耳技能收藏（utils/auth）
+  'post_favs',                // 社区帖子收藏（pages/community/detail）
   'latestHearingTestResult',  // 最近一次听力测试结果
   'historyHearingTestResult'  // 历史测试记录快照
 ]

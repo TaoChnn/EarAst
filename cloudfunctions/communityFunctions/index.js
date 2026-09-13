@@ -189,11 +189,102 @@ async function getPost(event) {
     // 用真实评论数覆盖存储字段，保证与广场列表一致
     const count = await db.collection('comments').where({ postId: event.id }).count()
     post.commentCount = count.total
+    // 当前用户是否已收藏（未登录/集合不存在时为 false）
+    const { OPENID } = cloud.getWXContext()
+    if (OPENID) {
+      try {
+        const favRes = await db.collection('post_favorites')
+          .where({ openid: OPENID, postId: event.id })
+          .limit(1)
+          .get()
+        post.faved = favRes.data.length > 0
+      } catch (e) {
+        post.faved = false
+      }
+    }
     return { success: true, data: post }
   } catch (e) {
     // doc 不存在时 SDK 会抛错
     return { success: true, data: null }
   }
+}
+
+// 收藏帖子：按 OPENID 记录收藏关系，并同步帖子 favCount 计数。
+// 客户端只传 postId，归属一律取服务端 OPENID；重复收藏幂等返回。
+async function favoritePost(event) {
+  const { OPENID } = cloud.getWXContext()
+  const postId = normalizePostId(event.postId)
+  if (!OPENID) return { success: false, errMsg: '登录后才能收藏' }
+  if (!postId) return { success: false, errMsg: '缺少帖子 ID' }
+
+  await ensureCollection('post_favorites')
+
+  const exists = await db.collection('post_favorites')
+    .where({ openid: OPENID, postId })
+    .count()
+  if (exists.total > 0) return { success: true, data: { faved: true, duplicated: true } }
+
+  await db.collection('post_favorites').add({
+    data: { openid: OPENID, postId, createTime: new Date() }
+  })
+  await db.collection('community').doc(postId)
+    .update({ data: { favCount: _.inc(1) } })
+    .catch(() => {})
+  return { success: true, data: { faved: true } }
+}
+
+// 取消收藏：删除收藏关系并同步计数（关系不存在时幂等返回）
+async function unfavoritePost(event) {
+  const { OPENID } = cloud.getWXContext()
+  const postId = normalizePostId(event.postId)
+  if (!OPENID) return { success: false, errMsg: '登录后才能操作收藏' }
+  if (!postId) return { success: false, errMsg: '缺少帖子 ID' }
+
+  await ensureCollection('post_favorites')
+
+  const exists = await db.collection('post_favorites')
+    .where({ openid: OPENID, postId })
+    .count()
+  if (!exists.total) return { success: true, data: { faved: false } }
+
+  await db.collection('post_favorites').where({ openid: OPENID, postId }).remove()
+  await db.collection('community').doc(postId)
+    .update({ data: { favCount: _.inc(-1) } })
+    .catch(() => {})
+  return { success: true, data: { faved: false } }
+}
+
+// 收藏列表：登录用户按收藏时间倒序返回云端收藏；event.ids 用于游客按本机收藏
+// 拉取帖子内容（帖子本身是公开读，不泄露他人数据），登录用户也可用 ids 补拉
+// 本机尚未同步到云端的收藏。返回帖子按请求顺序排列，方便端上保序展示。
+async function listPostFavorites(event) {
+  const { OPENID } = cloud.getWXContext()
+  let favIds = []
+  if (OPENID) {
+    const res = await db.collection('post_favorites')
+      .where({ openid: OPENID })
+      .orderBy('createTime', 'desc')
+      .limit(50)
+      .get()
+      .catch(() => ({ data: [] }))
+    favIds = res.data.map(item => normalizePostId(item.postId)).filter(Boolean)
+  }
+  const extraIds = Array.isArray(event.ids)
+    ? event.ids.map(normalizePostId).filter(Boolean)
+    : []
+  const mergedIds = []
+  ;[...favIds, ...extraIds].forEach(id => {
+    if (id && !mergedIds.includes(id) && mergedIds.length < 50) mergedIds.push(id)
+  })
+  if (!mergedIds.length) return { success: true, data: [] }
+
+  const res = await db.collection('community')
+    .where({ _id: _.in(mergedIds) })
+    .limit(mergedIds.length)
+    .get()
+  const byId = {}
+  res.data.forEach(post => { byId[post._id] = withTagLabel(post) })
+  return { success: true, data: mergedIds.map(id => byId[id]).filter(Boolean) }
 }
 
 // 按 openid 读取 users 集合中的用户档案；未建档时返回 null
@@ -513,6 +604,12 @@ exports.main = async (event) => {
         return await addComment(event)
       case 'updateCount':
         return await updateCount(event)
+      case 'favoritePost':
+        return await favoritePost(event)
+      case 'unfavoritePost':
+        return await unfavoritePost(event)
+      case 'listPostFavorites':
+        return await listPostFavorites(event)
       case 'adoptTip':
         return await adoptTip(event)
       default:

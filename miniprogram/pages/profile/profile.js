@@ -44,6 +44,12 @@ Page({
             url: '/pages/profile/my-posts'
           },
           {
+            id: 'my-favorites',
+            title: '我的收藏',
+            icon: '/images/icons/star.svg',
+            url: '/pages/profile/my-favorites'
+          },
+          {
             id: 'skill-library',
             title: '护耳技能库',
             icon: '/images/icons/goods.png',
