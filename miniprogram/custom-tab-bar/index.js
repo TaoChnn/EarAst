@@ -40,14 +40,15 @@ Component({
     onLongPressPublish(e) {
       // 仅「耳友圈」tab 触发发帖
       if (e.currentTarget.dataset.key !== '耳友圈') return
-      if (this.data.showReveal) return
 
       if (this.data.selected !== 2) {
         wx.switchTab({ url: '/pages/community/community' })
       }
-      // 同步传递幕布起点（底部 4 等分第 3 个，耳友圈大致中心）
+      // 同步传递幕布起点：被长按 tab 的横向中心（页面宽度百分比），y 取 tabbar 上方
+      const index = Number(e.currentTarget.dataset.index) || 0
+      const cx = ((index + 0.5) / this.data.list.length) * 100
       wx.navigateTo({
-        url: `/pages/community/publish?cx=${this.data.revealX}&cy=${this.data.revealY}`
+        url: `/pages/community/publish?cx=${cx}&cy=92`
       })
     }
   }
