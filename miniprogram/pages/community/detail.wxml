@@ -12,7 +12,8 @@
 
   <!-- 帖子主体 -->
   <view class="post-card">
-    <view class="post-title">{{post.title}}</view>
+    <!-- 发帖页没有标题输入，用户帖 title 为空：仅种子帖有标题，空标题不渲染避免占位 -->
+    <view class="post-title" wx:if="{{post.title}}">{{post.title}}</view>
 
     <view class="author-row">
       <image

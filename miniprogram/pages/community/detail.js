@@ -117,8 +117,10 @@ Page({
 
   onShareAppMessage() {
     const post = this.data.post
+    // 用户帖没有标题（发帖页无标题输入），回退到正文摘要，避免分享卡片标题为空
+    const contentSnippet = post && post.content ? String(post.content).slice(0, 30) : ''
     return {
-      title: post ? post.title : '耳友圈',
+      title: (post && post.title) || contentSnippet || '耳友圈',
       path: `/pages/community/detail?id=${this.postId}`
     }
   },
