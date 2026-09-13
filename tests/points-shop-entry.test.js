@@ -53,7 +53,7 @@ test('个人中心积分商城入口跳转到已注册页面', () => {
   delete global.wx
 })
 
-test('积分商城首期展示三种奖励分类和零积分占位余额', () => {
+test('积分商城默认展示商品目录、分类筛选与零积分占位余额', () => {
   global.Page = definition => {
     shopPageDefinition = definition
   }
@@ -61,25 +61,32 @@ test('积分商城首期展示三种奖励分类和零积分占位余额', () =>
 
   assert.equal(shopPageDefinition.data.pointsBalance, 0)
   assert.deepEqual(
-    shopPageDefinition.data.rewardCategories.map(item => item.id),
-    ['badges', 'coupons', 'souvenirs']
+    shopPageDefinition.data.categories.map(item => item.id),
+    ['all', 'culture', 'audio']
+  )
+  // 商品目录按云端目录初始化：9 款商品、0 积分时全部不可兑换
+  assert.equal(shopPageDefinition.data.products.length, 9)
+  const firstProduct = shopPageDefinition.data.products[0]
+  assert.equal(firstProduct.id, 'zju-badge')
+  assert.equal(firstProduct.canRedeem, false)
+  assert.equal(firstProduct.actionText, '还差 80 分')
+  assert.equal(firstProduct.soldOut, false)
+  // 默认「全部」分类下可见商品与完整目录一致
+  assert.deepEqual(
+    shopPageDefinition.data.visibleProducts.map(item => item.id),
+    shopPageDefinition.data.products.map(item => item.id)
   )
 
   delete global.Page
 })
 
-test('积分商城从当前用户云端账户读取余额和流水', async () => {
+test('积分商城从云端账户读取余额、商品、兑换记录与积分流水', async () => {
   const calls = []
   const store = {
     // issue #36：积分账户是云端账号数据，只有已登录（会话在本地）才会读取
     [SESSION_KEY]: { user: { openid: 'test-openid' } }
   }
-  const defaultSettings = {
-    reminderThreshold: 2,
-    healthReminder: true,
-    testReminder: true,
-    communityMessage: true
-  }
+  const completedAt = new Date(2026, 8, 1, 9, 30).getTime()
 
   global.wx = {
     getStorageSync(key) {
@@ -94,29 +101,28 @@ test('积分商城从当前用户云端账户读取余额和流水', async () =>
     cloud: {
       callFunction({ data }) {
         calls.push(data.type)
-        if (data.type === 'login') {
+        if (data.type === 'getPointsShop') {
           return Promise.resolve({
             result: {
               success: true,
               data: {
-                user: {
-                  openid: 'test-openid',
-                  nickname: '测试用户',
-                  bio: '关注听力健康，从每天开始',
-                  avatar: '',
-                  deviceModel: '',
-                  profileUpdatedAt: 0,
-                  settings: defaultSettings,
-                  testCount: 0,
-                  usageSeconds: 0,
-                  pointsBalance: 125
-                }
+                balance: 125,
+                products: [
+                  { id: 'zju-badge', points: 80, stock: 50, remainingStock: 0 },
+                  { id: 'airpods-pro', points: 5200, stock: 8, remainingStock: 8, redeemed: true }
+                ],
+                orders: [{
+                  id: 'order-1',
+                  productId: 'zju-badge',
+                  productName: '浙大校徽纪念章',
+                  productImage: '',
+                  points: 80,
+                  status: 'shipped',
+                  createdAt: completedAt
+                }]
               }
             }
           })
-        }
-        if (data.type === 'listFavorites') {
-          return Promise.resolve({ result: { success: true, data: [] } })
         }
         if (data.type === 'getPointsSummary') {
           return Promise.resolve({
@@ -128,7 +134,7 @@ test('积分商城从当前用户云端账户读取余额和流水', async () =>
                   id: 'ledger-1',
                   title: '护耳妙招被采纳',
                   points: 100,
-                  createdAt: new Date(2026, 8, 1, 9, 30).getTime()
+                  createdAt: completedAt
                 }]
               }
             }
@@ -147,15 +153,26 @@ test('积分商城从当前用户云端账户读取余额和流水', async () =>
     }
   }
 
-  await page.loadPointsSummary()
+  await page.loadShop()
 
+  assert.equal(page.data.needLogin, false)
   assert.equal(page.data.pointsBalance, 125)
   assert.equal(page.data.pointsLoading, false)
   assert.equal(page.data.pointsError, '')
-  assert.equal(page.data.needLogin, false)
+  // 商品按云端库存/兑换状态装饰
+  const [soldOutProduct, redeemedProduct] = page.data.products
+  assert.equal(soldOutProduct.soldOut, true)
+  assert.equal(soldOutProduct.canRedeem, false)
+  assert.equal(soldOutProduct.actionText, '已兑完')
+  assert.equal(redeemedProduct.redeemed, true)
+  assert.equal(redeemedProduct.actionText, '已兑换')
+  // 兑换记录与积分流水完成装饰
+  assert.equal(page.data.orders[0].statusLabel, '已发货')
+  assert.equal(page.data.orders[0].timeText, '2026.09.01')
   assert.equal(page.data.pointsEntries[0].pointsText, '+100')
   assert.equal(page.data.pointsEntries[0].direction, 'credit')
-  assert.equal(calls.includes('getPointsSummary'), true)
+  assert.equal(page.data.pointsEntries[0].timeText, '2026.09.01')
+  assert.deepEqual(calls, ['getPointsShop', 'getPointsSummary'])
 
   delete global.wx
 })
@@ -194,11 +211,12 @@ test('游客打开积分商城只展示登录引导，不触发登录建档', as
     }
   }
 
-  await page.loadPointsSummary()
+  await page.loadShop()
 
   assert.equal(page.data.needLogin, true)
   assert.equal(page.data.pointsLoading, false)
   assert.equal(page.data.pointsError, '')
+  assert.equal(page.data.pointsBalance, 0)
   assert.deepEqual(calls, [])
 
   delete global.wx
